@@ -1,0 +1,34 @@
+name: Front-end tests coverage
+
+on:
+  pull_request:
+    branches:
+      - master
+
+env:
+  UCHIBOT_NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v1
+        with:
+          node-version: '14'
+      - name: Configure NPM
+        run: |
+          echo "@happynumbers:registry=https://verdaccio-uchi.runit.cc/" >> ~/.npmrc
+          echo "//verdaccio-uchi.runit.cc/:_authToken=${UCHIBOT_NPM_TOKEN}" >> ~/.npmrc
+          echo "unsafe-perm=true" >> ~/.npmrc
+      - name: Install modules
+        run: yarn
+      - name: Run tests
+        run: yarn test
+      - uses: ArtiomTr/jest-coverage-report-action@v2
+        with:
+          github-token: ${{ secrets.UCHIBOT_GIT_TOKEN }}
+          annotations: none
+          skip-step: install
+          package-manager: yarn
+          test-script: yarn test
